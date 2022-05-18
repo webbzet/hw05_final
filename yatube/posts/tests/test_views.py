@@ -237,7 +237,10 @@ class PostsPagesTest(TestCase):
 
     def test_authorized_user_can_follow(self):
         """Авторизованный пользователь может подписаться."""
-        followers_count = Follow.objects.count()
+        followers_count = Follow.objects.filter(
+            user=PostsPagesTest.user,
+            author=PostsPagesTest.author
+        ).count()
         response = self.authorized_client.get(
             reverse_lazy(
                 'posts:profile_follow',
@@ -251,7 +254,12 @@ class PostsPagesTest(TestCase):
                 kwargs={'username': PostsPagesTest.author}
             )
         )
-        self.assertEqual(Follow.objects.count(), followers_count + 1)
+        self.assertEqual(
+            Follow.objects.filter(
+                user=PostsPagesTest.user,
+                author=PostsPagesTest.author
+            ).count(), followers_count + 1
+        )
 
     def test_authorized_user_can_unfollow(self):
         """Авторизованный пользователь может отписаться."""
@@ -259,7 +267,10 @@ class PostsPagesTest(TestCase):
             user=PostsPagesTest.user,
             author=PostsPagesTest.author,
         )
-        followers_count = Follow.objects.count()
+        followers_count = Follow.objects.filter(
+            user=PostsPagesTest.user,
+            author=PostsPagesTest.author
+        ).count()
         response = self.authorized_client.get(
             reverse_lazy(
                 'posts:profile_unfollow',
@@ -273,7 +284,12 @@ class PostsPagesTest(TestCase):
                 kwargs={'username': PostsPagesTest.author.username}
             )
         )
-        self.assertEqual(Follow.objects.count(), followers_count - 1)
+        self.assertEqual(
+            Follow.objects.filter(
+                user=PostsPagesTest.user,
+                author=PostsPagesTest.author
+            ).count(), followers_count - 1
+        )
 
     def test_new_post_appears(self):
         """Новая запись в ленте подписчиков."""

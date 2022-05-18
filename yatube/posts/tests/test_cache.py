@@ -2,6 +2,8 @@ import time
 
 from django.test import TestCase
 from django.contrib.auth import get_user_model
+from django.urls import reverse_lazy
+
 
 from posts.models import Post
 
@@ -13,17 +15,24 @@ class PostTests(TestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.user = User.objects.create(username='Test')
-
-    def test_cashe(self):
-        request1 = self.client.get('/')
-        Post.objects.create(
+        cls.post = Post.objects.create(
             text='Тестовый пост',
-            author=self.user,
+            author=cls.user,
         )
-        time.sleep(1)
-        request2 = self.client.get('/')
+
+    def test_cache(self):
+        request1 = self.client.get(reverse_lazy('posts:index'))
+        PostTests.post.delete()
+        request2 = self.client.get(reverse_lazy('posts:index'))
         self.assertHTMLEqual(
             str(request1.content),
             str(request2.content),
+            'Ошибка кэширования'
+        )
+        time.sleep(21)
+        request3 = self.client.get(reverse_lazy('posts:index'))
+        self.assertHTMLNotEqual(
+            str(request1.content),
+            str(request3.content),
             'Ошибка кэширования'
         )

@@ -7,10 +7,9 @@ from .utils import get_page_content
 
 
 def index(request):
-    posts = Post.objects.all()
+    posts = Post.objects.select_related('group').all()
     context = {
-        'page_obj': get_page_content(posts, request),
-        'index': True
+        'page_obj': get_page_content(posts, request)
     }
     return render(request, 'posts/index.html', context)
 
@@ -100,10 +99,9 @@ def add_comment(request, post_id):
 def follow_index(request):
     posts = Post.objects.filter(
         author__following__user=request.user
-    ).order_by('-pub_date')
+    )
     context = {
-        'page_obj': get_page_content(posts, request),
-        'follow': True
+        'page_obj': get_page_content(posts, request)
     }
     return render(request, 'posts/follow.html', context)
 
@@ -112,21 +110,20 @@ def follow_index(request):
 def profile_follow(request, username):
     user = request.user
     author = get_object_or_404(User, username=username)
-    following = Follow.objects.filter(author=author, user=user).exists()
-    if user != author and not following:
-        follow = Follow.objects.create(
+    if user != author:
+        Follow.objects.get_or_create(
             user=user,
             author=author
         )
-        follow.save()
     return redirect('posts:profile', username)
 
 
 @login_required
 def profile_unfollow(request, username):
-    unfollow = Follow.objects.get(
-        user=request.user,
-        author__username=username
+    unfollow = get_object_or_404(
+        Follow,
+        author__username=username,
+        user=request.user
     )
     unfollow.delete()
     return redirect('posts:profile', username)

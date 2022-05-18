@@ -146,7 +146,7 @@ class CreateFormTest(TestCase):
         self.client.post(
             reverse_lazy(
                 'posts:add_comment',
-                kwargs={'post_id': 1}
+                kwargs={'post_id': CreateFormTest.post.id}
             ),
             data=form_data,
             follow=True
