@@ -1,5 +1,4 @@
-import time
-
+from django.core.cache import cache
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.urls import reverse_lazy
@@ -29,7 +28,7 @@ class PostTests(TestCase):
             str(request2.content),
             'Ошибка кэширования'
         )
-        time.sleep(21)
+        cache.clear()
         request3 = self.client.get(reverse_lazy('posts:index'))
         self.assertHTMLNotEqual(
             str(request1.content),
